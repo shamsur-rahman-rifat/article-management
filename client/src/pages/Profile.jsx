@@ -11,7 +11,8 @@ export default function Profile() {
       try {
         const res = await api.post('/profileDetails');
         const user = res.data?.data?.[0];
-
+        const id = user._id
+        
         if (user) {
           setValue('name', user.name);
           setValue('email', user.email);
@@ -35,7 +36,7 @@ export default function Profile() {
     };
 
     try {
-      await api.post('/profileUpdate', payload);
+      await api.put(`/profileUpdate/${id}`, payload);
       alert('Profile updated successfully');
     } catch (err) {
       console.error(err);
