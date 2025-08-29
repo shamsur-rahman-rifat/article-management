@@ -5,14 +5,15 @@ import api from '../api';
 export default function Profile() {
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null); // Added userId state
+  const [isUpdating, setIsUpdating] = useState(false); // Added loading state for submit button
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await api.post('/profileDetails');
         const user = res.data?.data?.[0];
-        const id = user._id
-        
+
         if (user) {
           setUserId(user._id);
           setValue('name', user.name);
@@ -30,6 +31,7 @@ export default function Profile() {
   }, [setValue]);
 
   const onSubmit = async (data) => {
+    setIsUpdating(true); // Start loading
 
     const payload = {
       name: data.name,
@@ -42,13 +44,18 @@ export default function Profile() {
     } catch (err) {
       console.error(err);
       alert('Failed to update profile');
+    } finally {
+      setIsUpdating(false); // Stop loading
     }
   };
 
   if (loading) {
     return (
       <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
-        <div className="spinner-border text-primary" role="status" />
+        <div>
+          <div className="spinner-border text-primary" role="status" />
+          <p>Loading your profile...</p>
+        </div>
       </div>
     );
   }
@@ -67,7 +74,7 @@ export default function Profile() {
                 <input
                   {...register('name', { required: 'Name is required' })}
                   className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-                  placeholder="Your name"
+                  placeholder="e.g. John Doe"
                 />
                 {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
               </div>
@@ -101,12 +108,14 @@ export default function Profile() {
 
               {/* Submit */}
               <div className="d-grid">
-                <button className="btn btn-success btn-lg">
-                  Update Profile
+                <button 
+                  className="btn btn-success btn-lg"
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? 'Updating...' : 'Update Profile'}
                 </button>
               </div>
             </form>
-
           </div>
         </div>
       </div>
