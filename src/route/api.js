@@ -18,8 +18,8 @@ router.post('/login', login);
 
 // User Profile Routes
 
-router.put('/profileUpdate/:email',Authentication , profileUpdate);
-router.post('/profileDelete/:email',Authentication , profileDelete);
+router.put('/profileUpdate/:id',Authentication , profileUpdate);
+router.delete('/profileDelete/:id',Authentication , profileDelete);
 router.post('/profileDetails',Authentication , profileDetails);
 router.get('/viewUserList', Authentication , viewUserList);
 router.post('/getUserByEmail/:email',Authentication , getUserByEmail);

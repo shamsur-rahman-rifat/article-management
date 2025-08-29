@@ -36,9 +36,9 @@ export const login = async (req, res) => {
 
 export const profileUpdate = async (req, res) => {
   try {
-    const { email } = req.params;
+    const { id } = req.params;
     const reqBody = req.body;
-    await userModel.updateOne({  email }, reqBody);
+    await userModel.updateOne({  _id: id }, reqBody);
     res.json({ status: 'Success', message: 'Profile Updated' });
   } catch (error) {
     res.json({ status: 'Failed', message: error });
@@ -47,8 +47,8 @@ export const profileUpdate = async (req, res) => {
 
 export const profileDelete = async (req, res) => {
   try {
-    const { email } = req.params;
-    await userModel.deleteOne({ email });
+    const { id } = req.params;
+    await userModel.deleteOne({ _id: id });
     res.json({ status: 'Success', message: 'Profile Deleted' });
   } catch (error) {
     res.json({ status: 'Failed', message: error });

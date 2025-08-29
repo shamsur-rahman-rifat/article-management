@@ -79,7 +79,7 @@ export default function Team() {
       }
     } else if (formMode === 'edit') {
       try {
-        await api.post(`/profileUpdate?id=${editingUserId}`, payload);
+        await api.put(`/profileUpdate/${editingUserId}`, payload);
         alert('User updated');
         fetchUsers();
         cancelForm();
@@ -93,7 +93,7 @@ export default function Team() {
   const onDelete = async (id) => {
     if (!window.confirm('Delete this user?')) return;
     try {
-      await api.post(`/profileDelete?id=${id}`);
+      await api.delete(`/profileDelete/${id}`);
       alert('User deleted');
       fetchUsers();
     } catch (err) {
