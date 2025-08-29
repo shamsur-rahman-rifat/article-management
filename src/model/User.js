@@ -6,8 +6,7 @@ const userSchema = new Schema({
   password: String,
   roles: {    
     type: [String],
-    enum: ['admin', 'researcher', 'writer', 'publisher'],
-    default: ['writer'] }
+    enum: ['admin', 'researcher', 'writer', 'publisher']}
 },{timestamps: true, versionKey: false});
 
 export default model('users', userSchema);

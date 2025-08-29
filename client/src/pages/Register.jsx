@@ -4,23 +4,18 @@ import { useForm } from 'react-hook-form';
 import { AuthContext } from '../auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const ROLES = ['admin', 'researcher', 'writer', 'publisher'];
 
 export default function Register() {
-  const { register: registerFn, handleSubmit, setValue, getValues, formState: { errors } } = useForm();
+  const { register: registerFn, handleSubmit, formState: { errors } } = useForm();
   const { register: apiRegister } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     try {
-      // Ensure roles is an array of selected roles
-      const selectedRoles = ROLES.filter(role => data[role]);
-      if (selectedRoles.length === 0) selectedRoles.push('researcher'); // Default role
 
       await apiRegister({
         email: data.email,
         name: data.name,
-        roles: selectedRoles,
         password: data.password
       });
 
@@ -69,25 +64,6 @@ export default function Register() {
           />
           {errors.password && <small className="text-danger">{errors.password.message}</small>}
         </div>
-
-<div className="mb-3">
-  <label className="form-label mb-2">Select Roles:</label>
-  <div className="d-flex flex-wrap gap-3">
-    {ROLES.map(role => (
-      <div key={role} className="form-check">
-        <input
-          type="checkbox"
-          className="form-check-input"
-          id={`role-${role}`}
-          {...registerFn(role)}
-        />
-        <label className="form-check-label ms-2" htmlFor={`role-${role}`}>
-          {role}
-        </label>
-      </div>
-    ))}
-  </div>
-</div>
 
         <button className="btn btn-success">Register</button>
       </form>

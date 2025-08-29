@@ -2,12 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import api from '../api';
 
-const ROLES = ['admin', 'researcher', 'writer', 'publisher'];
-
 export default function Profile() {
   const { register, handleSubmit, setValue, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -18,9 +15,6 @@ export default function Profile() {
         if (user) {
           setValue('name', user.name);
           setValue('email', user.email);
-          ROLES.forEach(role => {
-            setValue(role, user.roles?.includes(role));
-          });
         }
       } catch (err) {
         console.error(err);
@@ -34,15 +28,11 @@ export default function Profile() {
   }, [setValue]);
 
   const onSubmit = async (data) => {
-    const selectedRoles = ROLES.filter(role => data[role]);
 
     const payload = {
       name: data.name,
       email: data.email,
-      roles: selectedRoles
     };
-
-    if (data.password) payload.password = data.password;
 
     try {
       await api.post('/profileUpdate', payload);
@@ -97,50 +87,19 @@ export default function Profile() {
                 {errors.email && <div className="invalid-feedback">{errors.email.message}</div>}
               </div>
 
-              {/* Password */}
+              {/* Change Password Link */}
               <div className="mb-3">
-                <label className="form-label">Change Password (optional)</label>
-                <div className="input-group">
-                  <input
-                    {...register('password')}
-                    type={showPassword ? 'text' : 'password'}
-                    className="form-control"
-                    placeholder="New password"
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => setShowPassword(prev => !prev)}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? 'Hide' : 'Show'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Roles */}
-              <div className="mb-4">
-                <label className="form-label">Your Roles</label>
-                <div className="d-flex flex-wrap gap-3">
-                  {ROLES.map(role => (
-                    <div key={role} className="form-check">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        id={`role-${role}`}
-                        {...register(role)}
-                      />
-                      <label className="form-check-label ms-1" htmlFor={`role-${role}`}>
-                        {role.charAt(0).toUpperCase() + role.slice(1)}
-                      </label>
-                    </div>
-                  ))}
+                <label className="form-label">Password</label>
+                <div>
+                  <a href="/forgot" className="btn btn-outline-primary">
+                    Change Password
+                  </a>
                 </div>
               </div>
 
               {/* Submit */}
               <div className="d-grid">
-                <button className="btn btn-primary btn-lg">
+                <button className="btn btn-success btn-lg">
                   Update Profile
                 </button>
               </div>

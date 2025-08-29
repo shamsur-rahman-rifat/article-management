@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { registration, login, profileUpdate, profileDetails, viewUserList, getUserByEmail, verifyEmail, verifyOTP, passwordReset } from '../controller/userController.js'
+import { registration, login, profileUpdate, profileDelete, profileDetails, viewUserList, getUserByEmail, verifyEmail, verifyOTP, passwordReset } from '../controller/userController.js'
 import { addProject, viewProjectList, updateProject, deleteProject } from '../controller/projectController.js'
 import { addTopic, viewTopicList, updateTopic, deleteTopic } from '../controller/topicController.js'
 import { viewArticleList, updateArticle, deleteArticle } from '../controller/articleController.js'
@@ -18,7 +18,8 @@ router.post('/login', login);
 
 // User Profile Routes
 
-router.post('/profileUpdate',Authentication , profileUpdate);
+router.put('/profileUpdate/:email',Authentication , profileUpdate);
+router.post('/profileDelete/:email',Authentication , profileDelete);
 router.post('/profileDetails',Authentication , profileDetails);
 router.get('/viewUserList', Authentication , viewUserList);
 router.post('/getUserByEmail/:email',Authentication , getUserByEmail);

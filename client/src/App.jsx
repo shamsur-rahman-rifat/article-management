@@ -14,6 +14,7 @@ import Topics from './pages/Topics';
 import Articles from './pages/Articles';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
+import Team from './pages/Team';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/projects" element={<RoleRoute roles={['admin']}><Projects/></RoleRoute>} />
         <Route path="/topics" element={<ProtectedRoute><Topics/></ProtectedRoute>} />
         <Route path="/articles" element={<ProtectedRoute><Articles/></ProtectedRoute>} />
+        <Route path="/team" element={<Team/>} />
         <Route path="/profile" element={<Profile/>} />
         <Route path="*" element={<NotFound/>} />
       </Routes>

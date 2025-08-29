@@ -65,6 +65,15 @@ export default function Navbar() {
               </NavLink>
             </li>
           )}
+
+          {user?.roles?.includes('admin') && (
+            <li className="nav-item">
+              <NavLink className={linkClass} to="/team" onClick={closeNavbar}>
+                Team
+              </NavLink>
+            </li>
+          )}
+
         </ul>
 
         <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">

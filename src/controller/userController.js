@@ -36,10 +36,38 @@ export const login = async (req, res) => {
 
 export const profileUpdate = async (req, res) => {
   try {
-    const email = req.headers['email'];
+    const { email } = req.params;
     const reqBody = req.body;
-    await userModel.updateOne({ email }, reqBody);
+    await userModel.updateOne({  email }, reqBody);
     res.json({ status: 'Success', message: 'Profile Updated' });
+  } catch (error) {
+    res.json({ status: 'Failed', message: error });
+  }
+};
+
+export const profileDelete = async (req, res) => {
+  try {
+    const { email } = req.params;
+    await userModel.deleteOne({ email });
+    res.json({ status: 'Success', message: 'Profile Deleted' });
+  } catch (error) {
+    res.json({ status: 'Failed', message: error });
+  }
+};
+
+export const getUserByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+    if (!email) {
+      return res.status(400).json({ status: 'Failed', message: 'Email is required' });
+    }
+
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ status: 'Failed', message: 'User not found' });
+    }
+
+    res.json({ status: 'Success', data: user });
   } catch (error) {
     res.json({ status: 'Failed', message: error });
   }
@@ -59,24 +87,6 @@ export const viewUserList = async (req, res) => {
   try {
     const result = await userModel.find();
     res.json({ status: 'Success', data: result });
-  } catch (error) {
-    res.json({ status: 'Failed', message: error });
-  }
-};
-
-export const getUserByEmail = async (req, res) => {
-  try {
-    const { email } = req.params;
-    if (!email) {
-      return res.status(400).json({ status: 'Failed', message: 'Email is required' });
-    }
-
-    const user = await userModel.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ status: 'Failed', message: 'User not found' });
-    }
-
-    res.json({ status: 'Success', data: user });
   } catch (error) {
     res.json({ status: 'Failed', message: error });
   }
