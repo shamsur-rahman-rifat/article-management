@@ -57,7 +57,7 @@ export default function Dashboard() {
 
   return (
 <div className="container mt-4">
-  <h3 className="mb-4 text-center text-primary">📊 Admin Timeline Dashboard</h3>
+  <h3 className="mb-4 text-center">📊 Admin Timeline Dashboard</h3>
   <div className="d-flex justify-content-between align-items-center">
     <p className="m-0">Welcome, <strong>{user?.email}</strong></p>
     <div><strong>Your roles:</strong> {user?.roles?.join(', ') || 'No roles'}</div>
@@ -76,7 +76,7 @@ export default function Dashboard() {
   ) : (
     <div className="table-responsive">
       <table className="table table-bordered table-hover align-middle table-striped">
-        <thead className="table-light">
+        <thead className="table-light align-middle text-center">
           <tr>
             <th>Project</th>
             <th>Month</th>
@@ -84,7 +84,7 @@ export default function Dashboard() {
             <th>Topic Given</th>
             <th>Writer Assigned</th>
             <th>Writing Complete</th>
-            <th>Published</th>
+            <th>Content Published</th>
           </tr>
         </thead>
         <tbody>
