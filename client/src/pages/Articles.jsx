@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../auth/AuthContext";
+import { CSVLink } from "react-csv";
+import * as XLSX from "xlsx";
+
 
 export default function Articles() {
   const { user } = useContext(AuthContext);
@@ -125,19 +128,73 @@ export default function Articles() {
     }
   };
 
-  return (
-    <div className="container py-4">
-      <h3 className="mb-4 text-center">📝 Articles Dashboard</h3>
+  const handleExcelDownload = () => {
+  // Map your article data to a plain array of objects
+  const exportData = filteredArticles().map(a => ({
+    Title: a.topic?.title ?? "—",
+    Project: a.project?.name ?? "—",
+    Month: a.topic?.month ?? "—",
+    Type: a.topic?.type ?? "—",
+    Status: a.status ?? "—",
+    Writer: getUserName(a.writer),
+    Publisher: a.publisher ? getUserName(a.publisher) : "—",
+    "Content Link": a.contentLink ?? "—",
+    "Publish Link": a.publishLink ?? "—",
+    Date: a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : "—"
+  }));
 
-      {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary"></div>
-          <p className="mt-2">Loading articles...</p>
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Articles");
+  XLSX.writeFile(workbook, "articles.xlsx");
+};
+
+
+return (
+  <div className="container py-4">
+    <h3 className="mb-4 text-center fw-bold">📝 Articles Dashboard</h3>
+
+    {loading ? (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status"></div>
+        <p className="mt-2 text-muted">Loading articles...</p>
+      </div>
+    ) : (
+      <div className="card shadow-sm border-0">
+        {/* Toolbar */}
+        <div className="card-header d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+          <div className="d-flex gap-2 flex-wrap">
+            <CSVLink
+              data={filteredArticles().map(a => ({
+                Title: a.topic?.title ?? "—",
+                Project: a.project?.name ?? "—",
+                Month: a.topic?.month ?? "—",
+                Type: a.topic?.type ?? "—",
+                Status: a.status ?? "—",
+                Writer: getUserName(a.writer),
+                Publisher: a.publisher ? getUserName(a.publisher) : "—",
+                "Content Link": a.contentLink ?? "—",
+                "Publish Link": a.publishLink ?? "—",
+                Date: a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : "—"
+              }))}
+              filename={"articles.csv"}
+            >
+              <button className="btn btn-sm btn-outline-success">Download CSV</button>
+            </CSVLink>
+
+            <button className="btn btn-sm btn-outline-primary" onClick={handleExcelDownload}>
+              Download Excel
+            </button>
+          </div>
+
+          {/* Optional: Add search or filter here later */}
+          <div className="text-muted small">Total Articles: {filteredArticles().length}</div>
         </div>
-      ) : (
+
+        {/* Table */}
         <div className="table-responsive-md">
-          <table className="table table-bordered table-hover align-middle table-striped">
-            <thead className="table-light align-middle text-center">
+          <table className="table table-bordered table-hover table-striped align-middle mb-0">
+            <thead className="table-light text-center position-sticky align-middle top-0" style={{ zIndex: 1 }}>
               <tr>
                 <th>Title</th>
                 <th>Project</th>
@@ -161,23 +218,26 @@ export default function Articles() {
                 const contentLinkVal = editLinks[a._id]?.contentLink ?? "";
                 const publishLinkVal = editLinks[a._id]?.publishLink ?? "";
 
+                const getStatusBadge = (status) => {
+                  switch (status) {
+                    case "published":
+                      return "success";
+                    case "submitted":
+                      return "info";
+                    default:
+                      return "secondary";
+                  }
+                };
+
                 return (
-                  <tr key={a._id}>
-                    <td>{a.topic?.title ?? "—"}</td>
+                  <tr key={a._id} className="align-middle text-center">
+                    <td className="text-start">{a.topic?.title ?? "—"}</td>
                     <td>{a.project?.name ?? "—"}</td>
                     <td>{a.topic?.month ?? "—"}</td>
                     <td>{a.topic?.type ?? "—"}</td>
-                    <td className="text-center">
-                      <span
-                        className={`badge bg-${
-                          a.status === "published"
-                            ? "success"
-                            : a.status === "submitted"
-                            ? "info"
-                            : "secondary"
-                        }`}
-                      >
-                        {a.status}
+                    <td>
+                      <span className={`badge bg-${getStatusBadge(a.status)} px-2 py-1`}>
+                        {a.status ?? "draft"}
                       </span>
                     </td>
                     <td>{getUserName(a.writer)}</td>
@@ -194,7 +254,7 @@ export default function Articles() {
                           onChange={(e) => handleLinkChange(a._id, "contentLink", e.target.value)}
                         />
                       ) : a.contentLink ? (
-                        <a href={a.contentLink} target="_blank" rel="noreferrer" title={a.contentLink}>
+                        <a href={a.contentLink} target="_blank" rel="noreferrer">
                           View
                         </a>
                       ) : (
@@ -213,7 +273,7 @@ export default function Articles() {
                           onChange={(e) => handleLinkChange(a._id, "publishLink", e.target.value)}
                         />
                       ) : a.publishLink ? (
-                        <a href={a.publishLink} target="_blank" rel="noreferrer" title={a.publishLink}>
+                        <a href={a.publishLink} target="_blank" rel="noreferrer">
                           View
                         </a>
                       ) : (
@@ -221,17 +281,14 @@ export default function Articles() {
                       )}
                     </td>
 
-                    {/* Date */}
-                    <td>
-                      {a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : "—"}
-                    </td>                    
+                    <td>{a.updatedAt ? new Date(a.updatedAt).toLocaleDateString() : "—"}</td>
 
                     {/* Actions */}
                     <td className="text-nowrap">
                       {isEditing ? (
-                        <>
+                        <div className="d-flex gap-1 justify-content-center">
                           <button
-                            className="btn btn-sm btn-success me-1"
+                            className="btn btn-sm btn-success"
                             onClick={() => handleSaveClick(a._id)}
                             disabled={
                               (canEditContent && !contentLinkVal) ||
@@ -248,12 +305,12 @@ export default function Articles() {
                           >
                             ✖
                           </button>
-                        </>
+                        </div>
                       ) : (
-                        <>
+                        <div className="d-flex gap-1 justify-content-center">
                           {(canEditContent || canEditPublish) && (
                             <button
-                              className="btn btn-sm btn-outline-primary me-1"
+                              className="btn btn-sm btn-outline-primary"
                               onClick={() => handleEditClick(a._id)}
                               title="Edit article"
                             >
@@ -269,7 +326,7 @@ export default function Articles() {
                               🗑 Delete
                             </button>
                           )}
-                        </>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -278,7 +335,8 @@ export default function Articles() {
             </tbody>
           </table>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
 }

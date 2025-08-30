@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import api from '../api';
 import { AuthContext } from '../auth/AuthContext';
+import { CSVLink } from "react-csv";
+import * as XLSX from "xlsx";
 
 export default function Topics() {
   const { user } = useContext(AuthContext);
@@ -139,6 +141,22 @@ export default function Topics() {
   };
 
   const ProjectName = ({ id }) => <>{projects.find(p => p._id === id)?.name || 'N/A'}</>;
+
+  const exportToExcel = () => {
+  const exportData = topics.map(t => ({
+    Title: t.title,
+    Month: t.month,
+    Project: projects.find(p => p._id === t.project)?.name || "N/A",
+    Type: t.type,
+    Status: t.status,
+    Writer: getUserNameById(t.assignedTo)
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Topics");
+  XLSX.writeFile(workbook, "topics.xlsx");
+};
 
   return (
     <div className="container py-4">
@@ -312,7 +330,32 @@ export default function Topics() {
       {/* All Topics Table */}
       <div className="card shadow-sm">
         <div className="card-body">
-          <h5 className="card-title mb-3">📋 All Topics</h5>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="card-title mb-0">📋 All Topics</h5>
+            <div className="d-flex gap-2">
+              {/* CSV Export */}
+              <CSVLink
+                data={topics.map(t => ({
+                  Title: t.title,
+                  Month: t.month,
+                  Project: projects.find(p => p._id === t.project)?.name || "N/A",
+                  Type: t.type,
+                  Status: t.status,
+                  Writer: getUserNameById(t.assignedTo)
+                }))}
+                filename="topics.csv"
+                className="btn btn-sm btn-outline-success"
+              >
+                ⬇️ CSV
+              </CSVLink>
+
+              {/* Excel Export */}
+              <button onClick={exportToExcel} className="btn btn-sm btn-outline-primary">
+                ⬇️ Excel
+              </button>
+            </div>
+          </div>
+
           <div className="table-responsive">
             <table className="table table-hover table-bordered align-middle table-striped">
               <thead className="table-light text-center">
