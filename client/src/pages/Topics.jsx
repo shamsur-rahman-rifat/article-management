@@ -18,13 +18,14 @@ export default function Topics() {
     month: '',
     wordCount: 1000,
     type: 'Blog Post',
-    project: ''
+    project: '',
+    assignedTo: '' // ✅ NEW field for writer assignment
   };
   const [form, setForm] = useState(initialForm);
 
-      const getUserNameById = (userId) =>
-      allUsers.find((u) => u._id === userId)?.name ||
-      allUsers.find((u) => u._id === userId)?.email || '-';
+  const getUserNameById = (userId) =>
+    allUsers.find((u) => u._id === userId)?.name ||
+    allUsers.find((u) => u._id === userId)?.email || '-';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +62,10 @@ export default function Topics() {
 
     try {
       if (editingTopicId) {
+        // ✅ If writer is selected, keep status "assigned"
+        if (form.assignedTo) {
+          payload.status = 'assigned';
+        }
         await api.put(`/updateTopic/${editingTopicId}`, payload);
         alert('Topic updated successfully');
       } else {
@@ -85,7 +90,8 @@ export default function Topics() {
       month: topic.month,
       wordCount: topic.wordCount,
       type: topic.type || 'Blog Post',
-      project: topic.project
+      project: topic.project,
+      assignedTo: topic.assignedTo || '' // ✅ load existing writer if any
     });
   };
 
@@ -134,201 +140,207 @@ export default function Topics() {
 
   const ProjectName = ({ id }) => <>{projects.find(p => p._id === id)?.name || 'N/A'}</>;
 
-return (
-  <div className="container py-4">
-    <h3 className="mb-4 text-center">📚 Topics Dashboard</h3>
+  return (
+    <div className="container py-4">
+      <h3 className="mb-4 text-center">📚 Topics Dashboard</h3>
 
-{/* Add / Edit Topic Form */}
-{user?.roles?.includes('researcher') && (
-  <div className="card shadow-sm mb-4">
-    <div className="card-body">
-      <h5 className="card-title mb-3">{editingTopicId ? '✏️ Edit Topic' : '➕ Add New Topic'}</h5>
-      <form onSubmit={handleFormSubmit}>
-        <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-          <div className="col">
-            <input
-              className="form-control"
-              placeholder="Title"
-              value={form.title}
-              onChange={e => handleFormChange('title', e.target.value)}
-              required
-            />
-          </div>
-          <div className="col">
-            <select
-              className="form-select"
-              value={form.month}
-              onChange={e => handleFormChange('month', e.target.value)}
-              required
-            >
-              <option value="">Select Month</option>
-              <option value="January">January</option>
-              <option value="February">February</option>
-              <option value="March">March</option>
-              <option value="April">April</option>
-              <option value="May">May</option>
-              <option value="June">June</option>
-              <option value="July">July</option>
-              <option value="August">August</option>
-              <option value="September">September</option>
-              <option value="October">October</option>
-              <option value="November">November</option>
-              <option value="December">December</option>
-            </select>
-          </div>
-          <div className="col">
-            <input
-              className="form-control"
-              type="number"
-              placeholder="Word Count"
-              value={form.wordCount}
-              onChange={e => handleFormChange('wordCount', Number(e.target.value))}
-              required
-            />
-          </div>
+      {/* Add / Edit Topic Form */}
+      {(user?.roles?.includes('researcher') || user?.roles?.includes('admin')) && (
+        <div className="card shadow-sm mb-4">
+          <div className="card-body">
+            <h5 className="card-title mb-3">{editingTopicId ? '✏️ Edit Topic' : '➕ Add New Topic'}</h5>
+            <form onSubmit={handleFormSubmit}>
+              <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                <div className="col">
+                  <input
+                    className="form-control"
+                    placeholder="Title"
+                    value={form.title}
+                    onChange={e => handleFormChange('title', e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="col">
+                  <select
+                    className="form-select"
+                    value={form.month}
+                    onChange={e => handleFormChange('month', e.target.value)}
+                    required
+                  >
+                    <option value="">Select Month</option>
+                    {[
+                      'January','February','March','April','May','June',
+                      'July','August','September','October','November','December'
+                    ].map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div className="col">
+                  <input
+                    className="form-control"
+                    type="number"
+                    placeholder="Word Count"
+                    value={form.wordCount}
+                    onChange={e => handleFormChange('wordCount', Number(e.target.value))}
+                    required
+                  />
+                </div>
+                <div className="col">
+                  <select
+                    className="form-select"
+                    value={form.type}
+                    onChange={e => handleFormChange('type', e.target.value)}
+                    required
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Blog Post">Blog Post</option>
+                    <option value="Guest Post">Guest Post</option>
+                    <option value="Web Content">Web Content</option>
+                  </select>
+                </div>
+                <div className="col">
+                  <select
+                    className="form-select"
+                    value={form.project}
+                    onChange={e => handleFormChange('project', e.target.value)}
+                    required
+                  >
+                    <option value="">Select Project</option>
+                    {projects.map(p => (
+                      <option key={p._id} value={p._id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
 
-          {/* Added Type select here */}
-          <div className="col">
-            <select
-              className="form-select"
-              value={form.type}
-              onChange={e => handleFormChange('type', e.target.value)}
-              required
-            >
-              <option value="">Select Type</option>
-              <option value="Blog Post">Blog Post</option>
-              <option value="Guest Post">Guest Post</option>
-              <option value="Web Content">Web Content</option>
-            </select>
-          </div>
+                {/* ✅ Show Writer dropdown only in edit (admin mode) */}
+                {editingTopicId && user?.roles?.includes('admin') && (
+                  <div className="col">
+                    <select
+                      className="form-select"
+                      value={form.assignedTo}
+                      onChange={e => handleFormChange('assignedTo', e.target.value)}
+                    >
+                      <option value="">No Writer Assigned</option>
+                      {writers.map(w => (
+                        <option key={w._id} value={w._id}>
+                          {w.name || w.email}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-          <div className="col">
-            <select
-              className="form-select"
-              value={form.project}
-              onChange={e => handleFormChange('project', e.target.value)}
-              required
-            >
-              <option value="">Select Project</option>
-              {projects.map(p => (
-                <option key={p._id} value={p._id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="col d-flex align-items-end ">
-            {editingTopicId ? (
-              <div className="d-flex gap-2 w-100">
-                <button className="btn btn-success w-100" type="submit">Update</button>
-                <button className="btn btn-secondary w-100" type="button" onClick={cancelEdit}>Cancel</button>
+                <div className="col d-flex align-items-end ">
+                  {editingTopicId ? (
+                    <div className="d-flex gap-2 w-100">
+                      <button className="btn btn-success w-100" type="submit">Update</button>
+                      <button className="btn btn-secondary w-100" type="button" onClick={cancelEdit}>Cancel</button>
+                    </div>
+                  ) : (
+                    <button className="btn btn-primary w-100" type="submit">Add</button>
+                  )}
+                </div>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Pending Topics (Admins) */}
+      {user?.roles?.includes('admin') && (
+        <div className="card shadow-sm mb-4">
+          <div className="card-body">
+            <h5 className="card-title mb-3">⏳ Pending Topics</h5>
+            {topics.filter(t => t.status === 'pending').length === 0 ? (
+              <p className="text-muted">No pending topics.</p>
             ) : (
-              <button className="btn btn-primary w-100" type="submit">Add</button>
+              <div className="table-responsive">
+                <table className="table table-hover table-bordered align-middle table-striped">
+                  <thead className="table-light text-center">
+                    <tr>
+                      <th>Title</th>
+                      <th>Project</th>
+                      <th>Month</th>
+                      <th>Type</th>                    
+                      <th>Assign</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topics.filter(t => t.status === 'pending').map(t => (
+                      <tr key={t._id}>
+                        <td>{t.title}</td>
+                        <td><ProjectName id={t.project} /></td>
+                        <td>{t.month}</td>
+                        <td>{t.type}</td>                      
+                        <td>
+                          <div className="d-flex gap-2">
+                            <select
+                              className="form-select form-select-sm"
+                              value={selectedWriters[t._id] || ''}
+                              onChange={e =>
+                                setSelectedWriters(prev => ({
+                                  ...prev,
+                                  [t._id]: e.target.value
+                                }))
+                              }
+                            >
+                              <option value="">Select Writer</option>
+                              {writers.map(w => (
+                                <option key={w._id} value={w.email}>
+                                  {w.name || w.email}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              className="btn btn-sm btn-success"
+                              onClick={() => assignToWriterByEmail(t._id, selectedWriters[t._id])}
+                              disabled={!selectedWriters[t._id]}
+                            >
+                              Assign
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
-      </form>
-    </div>
-  </div>
-)}
+      )}
 
-    {/* Pending Topics (Admins) */}
-    {user?.roles?.includes('admin') && (
-      <div className="card shadow-sm mb-4">
+      {/* All Topics Table */}
+      <div className="card shadow-sm">
         <div className="card-body">
-          <h5 className="card-title mb-3">⏳ Pending Topics</h5>
-          {topics.filter(t => t.status === 'pending').length === 0 ? (
-            <p className="text-muted">No pending topics.</p>
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-hover table-bordered align-middle table-striped">
-                <thead className="table-light text-center">
-                  <tr>
-                    <th>Title</th>
-                    <th>Project</th>
-                    <th>Month</th>
-                    <th>Type</th>                    
-                    <th>Assign</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topics.filter(t => t.status === 'pending').map(t => (
-                    <tr key={t._id}>
-                      <td>{t.title}</td>
-                      <td><ProjectName id={t.project} /></td>
-                      <td>{t.month}</td>
-                      <td>{t.type}</td>                      
-                      <td>
-                        <div className="d-flex gap-2">
-                          <select
-                            className="form-select form-select-sm"
-                            value={selectedWriters[t._id] || ''}
-                            onChange={e =>
-                              setSelectedWriters(prev => ({
-                                ...prev,
-                                [t._id]: e.target.value
-                              }))
-                            }
-                          >
-                            <option value="">Select Writer</option>
-                            {writers.map(w => (
-                              <option key={w._id} value={w.email}>
-                                {w.name || w.email}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            className="btn btn-sm btn-success"
-                            onClick={() => assignToWriterByEmail(t._id, selectedWriters[t._id])}
-                            disabled={!selectedWriters[t._id]}
-                          >
-                            Assign
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    )}
-
-    {/* All Topics Table */}
-    <div className="card shadow-sm">
-      <div className="card-body">
-        <h5 className="card-title mb-3">📋 All Topics</h5>
-        <div className="table-responsive">
-          <table className="table table-hover table-bordered align-middle table-striped">
-            <thead className="table-light text-center">
-              <tr>
-                <th>Title</th>
-                <th>Month</th>
-                <th>Project</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Writer</th>
-                {(user?.roles?.includes('researcher') || user?.roles?.includes('admin')) && (
-                  <th>Actions</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {topics.map(t => (
-                <tr key={t._id}>
-                  <td>{t.title}</td>
-                  <td>{t.month}</td>
-                  <td><ProjectName id={t.project} /></td>
-                  <td>{t.type}</td>
-                  <td>
-                    <span className={`badge bg-${t.status === 'assigned' ? 'info' : 'secondary'}`}>
-                      {t.status || 'draft'}
-                    </span>
-                  </td>
-                  <td>{getUserNameById(t.assignedTo)}</td>
+          <h5 className="card-title mb-3">📋 All Topics</h5>
+          <div className="table-responsive">
+            <table className="table table-hover table-bordered align-middle table-striped">
+              <thead className="table-light text-center">
+                <tr>
+                  <th>Title</th>
+                  <th>Month</th>
+                  <th>Project</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Writer</th>
+                  {(user?.roles?.includes('researcher') || user?.roles?.includes('admin')) && (
+                    <th>Actions</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {topics.map(t => (
+                  <tr key={t._id}>
+                    <td>{t.title}</td>
+                    <td>{t.month}</td>
+                    <td><ProjectName id={t.project} /></td>
+                    <td>{t.type}</td>
+                    <td>
+                      <span className={`badge bg-${t.status === 'assigned' ? 'info' : 'secondary'}`}>
+                        {t.status || 'draft'}
+                      </span>
+                    </td>
+                    <td>{getUserNameById(t.assignedTo)}</td>
                     {(user?.roles?.includes('admin') ||
                       (user?.roles?.includes('researcher') && !t.assignedTo)) && (
                       <td>
@@ -342,13 +354,13 @@ return (
                         </div>
                       </td>
                     )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
