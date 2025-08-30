@@ -74,10 +74,10 @@ export default function Dashboard() {
                 <th>Project</th>
                 <th>Month</th>
                 <th>Topic</th>
-                <th>Topic Research Done</th>
-                <th>Writer Assign Done</th>
-                <th>Content Writing Done</th>
-                <th>Content Publish Done</th>
+                <th>Topic Given</th>
+                <th>Writer Assigned</th>
+                <th>Writing Complete</th>
+                <th>Published</th>
               </tr>
             </thead>
             <tbody>
