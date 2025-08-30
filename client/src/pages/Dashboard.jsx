@@ -56,53 +56,60 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container mt-4">
-      <h3 className="mb-4 text-center">📊 Admin Timeline Dashboard</h3>
-      <p>Welcome <strong>{user?.email}</strong></p>
-      <div><strong>Your roles:</strong> {user?.roles?.join(', ') || 'No roles'}</div>
-      <hr />
-
-      {loading ? (
-        <p>Loading dashboard data...</p>
-      ) : error ? (
-        <div className="alert alert-danger">{error}</div>
-      ) : (
-        <div className="table-responsive">
-          <table className="table table-hover table-bordered align-middle table-striped">
-            <thead className="table-light">
-              <tr>
-                <th>Project</th>
-                <th>Month</th>
-                <th>Topic</th>
-                <th>Topic Given</th>
-                <th>Writer Assigned</th>
-                <th>Writing Complete</th>
-                <th>Published</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="text-center text-muted">No data available</td>
-                </tr>
-              ) : (
-                data.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.project}</td>
-                    <td>{item.month}</td>
-                    <td>{item.topic}</td>
-                    <td>{formatDate(item.researchSubmittedAt)}</td>
-                    <td>{formatDateWithDiff(item.adminAssignedAt, item.researchSubmittedAt)}</td>
-                    <td>{formatDateWithDiff(item.writerSubmittedAt, item.adminAssignedAt)}</td>
-                    <td>{formatDateWithDiff(item.publishedAt, item.writerSubmittedAt)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+<div className="container mt-4">
+  <h3 className="mb-4 text-center text-primary">📊 Admin Timeline Dashboard</h3>
+  <div className="d-flex justify-content-between align-items-center">
+    <p className="m-0">Welcome, <strong>{user?.email}</strong></p>
+    <div><strong>Your roles:</strong> {user?.roles?.join(', ') || 'No roles'}</div>
+  </div>
+  <hr />
+  
+  {loading ? (
+    <div className="text-center">
+      <div className="spinner-border text-primary" role="status"></div>
+      <p className="mt-3">Loading dashboard data...</p>
     </div>
+  ) : error ? (
+    <div className="alert alert-danger text-center">
+      <strong>Error:</strong> {error}
+    </div>
+  ) : (
+    <div className="table-responsive">
+      <table className="table table-bordered table-hover align-middle table-striped">
+        <thead className="table-light">
+          <tr>
+            <th>Project</th>
+            <th>Month</th>
+            <th>Topic</th>
+            <th>Topic Given</th>
+            <th>Writer Assigned</th>
+            <th>Writing Complete</th>
+            <th>Published</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.length === 0 ? (
+            <tr>
+              <td colSpan="7" className="text-center text-muted">No data available</td>
+            </tr>
+          ) : (
+            data.map((item, index) => (
+              <tr key={index}>
+                <td>{item.project}</td>
+                <td>{item.month}</td>
+                <td>{item.topic}</td>
+                <td>{formatDate(item.researchSubmittedAt)}</td>
+                <td>{formatDateWithDiff(item.adminAssignedAt, item.researchSubmittedAt)}</td>
+                <td>{formatDateWithDiff(item.writerSubmittedAt, item.adminAssignedAt)}</td>
+                <td>{formatDateWithDiff(item.publishedAt, item.writerSubmittedAt)}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  )}
+</div>
   );
 }
 
